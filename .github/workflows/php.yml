@@ -1,0 +1,115 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+      types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    strategy:
+      max-parallel: 15
+      matrix:
+        operating-system: [ubuntu-latest, macOS-latest]
+        php-versions: ['8.0', '8.1']
+        # TODO : enable tests on windows
+        #include:
+        #  - operating-system: windows-latest
+        #    php-versions: 8.0
+
+    name: PHP ${{ matrix.php-versions }} Test on ${{ matrix.operating-system }}
+    runs-on: ${{ matrix.operating-system }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@2.21.2
+      with:
+        php-version: ${{ matrix.php-versions }}
+        extensions: mbstring, dom, intl, iconv
+
+    - name: Validate composer.json and composer.lock
+      run: composer validate
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress --no-suggest
+
+    - name: Install tools
+      run: ./scripts/install_tools.sh
+      shell: bash
+
+    - name: Run test suite
+      run: composer run-script test
+
+  frontend:
+    name: Frontend tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@2.21.2
+      with:
+        php-version: '8.0'
+        extensions: mbstring, dom, intl, iconv
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress --no-suggest
+
+    - name: Generate documentation
+      run: bin/daux generate
+
+    - name: Generate documentation in single file
+      run: bin/daux generate --format=html-file --destination=static-single
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3.5.1
+      with:
+        node-version: '16.x'
+        cache: 'yarn'
+
+    - name: yarn install
+      run: yarn install
+
+    - name: yarn build
+      run: yarn build
+
+    - name: yarn test
+      run: yarn test
+
+  sonarcloud:
+    name: "SonarCloud"
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@2.21.2
+      with:
+        php-version: 8.0
+        extensions: mbstring, dom, intl, iconv
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress --no-suggest
+
+    - name: Install tools
+      run: ./scripts/install_tools.sh
+
+    - name: Run test suite
+      run: composer run-script test -- --coverage-clover=coverage.clover --log-junit=test-report.xml
+
+    - name: Fix reports
+      run: ./scripts/fix_reports.sh
+
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@v1.7
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
