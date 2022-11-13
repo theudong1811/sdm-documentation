@@ -1,5 +1,5 @@
 <?php $this->layout('theme::layout/05_page') ?>
-<article class="Page">
+<article class="Page truongcccc">
 
     <div class="Page__header">
         <h1><?= $page['breadcrumbs'] ? $this->get_breadcrumb_title($page, $base_page) : $page['title'] ?></h1>
