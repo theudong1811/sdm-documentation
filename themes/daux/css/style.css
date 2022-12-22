@@ -9773,3 +9773,6 @@ nav.navbar.extended .primary-logo {
 .footer-logo h4 {
     font-weight: 600;
 }
+div > h3 {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
