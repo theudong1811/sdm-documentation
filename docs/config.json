@@ -4,7 +4,14 @@
     "author": "Kim Giang Technology Development JSC",
     "image": [
         "dummy_vid.jpg",
-        "dummy_img.jpg"
+        "dummy_img.jpg",
+        "milestone_manager.JPG",
+        "note_manager.JPG",
+        "detail_sprint1.JPG",
+        "chat.JPG",
+        "upload_file.JPG",
+        "bg_function2.jpg",
+        "bg_help.jpg"
     ],
     "ignore": {
             "files": ["Work_In_Progress.md"],
